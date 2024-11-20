@@ -41,9 +41,9 @@ export default[
       },
       {
         label: "Select tone of the caption",
-        field: "dropdown",
+        field: "textarea",
         name: "tone",
-        options: ["Professional", "Funny", "Casual", "Inspirational"],
+      //  options: ["Professional", "Funny", "Casual", "Inspirational"],
         required: true
       }
     ]
