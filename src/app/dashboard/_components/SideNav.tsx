@@ -1,6 +1,7 @@
 "use client"
 
 import { Coins, FileClock, History, Home, Settings, WalletCards } from 'lucide-react'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -51,11 +52,11 @@ const SideNav= () => {
 
         <div className='mt-6 items-center'>
             {menuList.map((menu,index)=>(
-                <div key={index} className={`flex gap-2 mb-2 mt-5 p-3 items-center shadow-sm hover:bg-primary hover:text-white rounded-lg ${pathname==menu.path&&'bg-primary text-white'}`}>
+                <Link href={menu.path}><div key={index} className={`flex cursor-pointer gap-2 mb-2 mt-5 p-3 items-center shadow-sm hover:bg-primary hover:text-white rounded-lg ${pathname==menu.path&&'bg-primary text-white'}`}>
                       {/* use active the path using usepathname() */}
                     <menu.icon/>
                     <h2>{menu.name}</h2>
-                </div>
+                </div></Link>
             ))}
         </div>
     </div>

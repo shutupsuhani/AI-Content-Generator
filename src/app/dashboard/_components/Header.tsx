@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { UserButton } from '@clerk/nextjs';
 import React from 'react'
 
 const Header = () => {
@@ -11,9 +12,20 @@ const Header = () => {
         <input type='text' placeholder='Search' className='outline-none'/>
        </div>
 
-       <div className=''>
-        <h2 className='bg-primary px-2 text-sm text-white rounded-full'>🔥Join Membership at just $9.9</h2>
+       <div className='flex items-center justify-end'>
+       {/**  <h2 className='bg-primary px-2 text-sm text-white rounded-full'>🔥Join Membership at just $9.9</h2> */}
+       
+        <UserButton
+          appearance={{
+            elements: {
+              userButtonAvatarBox: 'h-8 w-8', // Set avatar size
+            },
+          }}
+        />
+       
        </div>
+
+       
 
     </div>
   )

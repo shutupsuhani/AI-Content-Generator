@@ -4,7 +4,8 @@ export default function Page() {
   return (
     
     <div className='items-center flex justify-center mt-4'>
-      <SignIn />
+       
+       <SignIn/>
 
     </div>
     

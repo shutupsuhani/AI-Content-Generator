@@ -11,8 +11,8 @@ import Link from "next/link";
 import { chatSession } from "../../../../../utils/AiModal";
 import { db } from "../../../../../utils/db";
 import { AIOutput } from "../../../../../utils/schema";
-import { useUser } from "@clerk/clerk-react";
-import moment from 'moment'
+import { useUser } from "@clerk/nextjs";
+import moment from "moment";
 
 interface PROPS {
   params: {
@@ -24,8 +24,8 @@ const Page: React.FC<PROPS> = (props) => {
   const [selectedTemplate, setSelectedTemplate] = useState<TEMPLATE | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [aiOutput, setAIOutput] = useState<string>("");
-  const user=useUser();
-  // Use useEffect to resolve selectedTemplate when params change
+  const { isLoaded, user } = useUser(); // Correct usage of useUser
+
   useEffect(() => {
     const resolvedTemplate = Template?.find(
       (item) => item.slug === props.params["template-slug"]
@@ -43,7 +43,7 @@ const Page: React.FC<PROPS> = (props) => {
       const result = await chatSession.sendMessage(finalAIPrompt);
       console.log(result.response.text());
       setAIOutput(result?.response.text());
-      await saveIndb(formData, selectedTemplate?.slug,aiOutput)
+      await saveIndb(formData, selectedTemplate?.slug, result?.response.text());
     } catch (error) {
       console.error("Error generating AI content:", error);
     } finally {
@@ -51,20 +51,22 @@ const Page: React.FC<PROPS> = (props) => {
     }
   };
 
+  const saveIndb = async (formData: any, slug: any, aiResp: string) => {
+    if (!isLoaded || !user) {
+      console.error("User data is not available.");
+      return;
+    }
 
-
-  const saveIndb = async (formData: any, slug: any,aiResp:string) => {
     const result = await db.insert(AIOutput).values({
       formData: formData,
       templateSlug: slug,
-      aiResponse:aiResp,
-      createdBy:user?.primaryEmailAddress?.emailAddress,
-      createdAt:moment().format('DD/MM/yyyy')
-
-    })
+      aiResponse: aiResp,
+      createdBy: user.primaryEmailAddress?.emailAddress || "Anonymous", // Fallback if email is unavailable
+      createdAt: moment().format("DD/MM/YYYY"), // Correct year format
+    });
 
     console.log(result);
-  }
+  };
 
   return (
     <div className="p-10">
@@ -95,5 +97,3 @@ const Page: React.FC<PROPS> = (props) => {
 };
 
 export default Page;
-
-
