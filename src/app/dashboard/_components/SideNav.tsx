@@ -4,6 +4,7 @@ import { Coins, FileClock, History, Home, Settings, WalletCards } from 'lucide-r
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect } from 'react'
+import UsageTrack from './UsageTrack'
 
 const SideNav= () => {
 
@@ -59,6 +60,11 @@ const SideNav= () => {
                 </div></Link>
             ))}
         </div>
+         
+         <div className='w-full rounded-lg'>
+          <UsageTrack/>
+         </div>
+
     </div>
   )
 }

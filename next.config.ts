@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['cdn-icons-png.flaticon.com'], 
   },
+  api: {
+    bodyParser: true,
+  },
 };
 
 export default nextConfig;
