@@ -12,7 +12,7 @@ interface History {
   createdBy: string;
 }
 
-const MAX_CREDITS = 10000;  // Max credits the user can consume
+const MAX_CREDITS = 20000;  
 
 function UsageTrack() {
   const { user } = useUser();

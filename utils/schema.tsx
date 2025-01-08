@@ -10,6 +10,6 @@ export const AIOutput=pgTable('aiOutput',{
     aiResponse:text('aiResponse'),
     templateSlug:varchar('templateSlug').notNull(),
     createdBy:varchar('createdBy').notNull(),
-     createdAt:varchar('createdAt')
+    createdAt:varchar('createdAt'),
 
 })
