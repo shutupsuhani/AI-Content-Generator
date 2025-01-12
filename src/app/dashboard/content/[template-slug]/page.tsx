@@ -27,10 +27,15 @@ const Page: React.FC<PROPS> = (props) => {
   const { isLoaded, user } = useUser(); // Correct usage of useUser
 
   useEffect(() => {
-    const resolvedTemplate = Template?.find(
-      (item) => item.slug === props.params["template-slug"]
-    );
-    setSelectedTemplate(resolvedTemplate);
+    const resolveParams = async () => {
+      const resolvedParams = await props.params; // Await the resolution of params
+      const resolvedTemplate = Template?.find(
+        (item) => item.slug === resolvedParams["template-slug"]
+      );
+      setSelectedTemplate(resolvedTemplate);
+    };
+
+    resolveParams();
   }, [props.params]);
 
   const GenerateAIContent = async (formData: any) => {
