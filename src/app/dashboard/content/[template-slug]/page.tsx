@@ -15,20 +15,20 @@ import { useUser } from "@clerk/nextjs";
 import moment from "moment";
 
 interface PROPS {
-  params: {
+  params: Promise<{
     "template-slug": string;
-  };
+  }>;
 }
 
-const Page: React.FC<PROPS> = (props) => {
+const Page: React.FC<PROPS> = ({ params }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<TEMPLATE | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [aiOutput, setAIOutput] = useState<string>("");
-  const { isLoaded, user } = useUser(); // Correct usage of useUser
+  const { isLoaded, user } = useUser();
 
   useEffect(() => {
     const resolveParams = async () => {
-      const resolvedParams = await props.params; // Await the resolution of params
+      const resolvedParams = await params; 
       const resolvedTemplate = Template?.find(
         (item) => item.slug === resolvedParams["template-slug"]
       );
@@ -36,7 +36,7 @@ const Page: React.FC<PROPS> = (props) => {
     };
 
     resolveParams();
-  }, [props.params]);
+  }, [params]);
 
   const GenerateAIContent = async (formData: any) => {
     setLoading(true);
@@ -46,9 +46,9 @@ const Page: React.FC<PROPS> = (props) => {
 
     try {
       const result = await chatSession.sendMessage(finalAIPrompt);
-      console.log(result.response.text());
-      setAIOutput(result?.response.text());
-      await saveIndb(formData, selectedTemplate?.slug, result?.response.text());
+      const responseText = await result.response.text();
+      setAIOutput(responseText);
+      await saveIndb(formData, selectedTemplate?.slug, responseText);
     } catch (error) {
       console.error("Error generating AI content:", error);
     } finally {
@@ -56,21 +56,25 @@ const Page: React.FC<PROPS> = (props) => {
     }
   };
 
-  const saveIndb = async (formData: any, slug: any, aiResp: string) => {
+  const saveIndb = async (formData: any, slug: string | undefined, aiResp: string) => {
     if (!isLoaded || !user) {
       console.error("User data is not available.");
       return;
     }
 
-    const result = await db.insert(AIOutput).values({
-      formData: formData,
-      templateSlug: slug,
-      aiResponse: aiResp,
-      createdBy: user.primaryEmailAddress?.emailAddress || "Anonymous", // Fallback if email is unavailable
-      createdAt: moment().format("DD/MM/YYYY"), // Correct year format
-    });
+    try {
+      const result = await db.insert(AIOutput).values({
+        formData,
+        templateSlug: slug,
+        aiResponse: aiResp,
+        createdBy: user.primaryEmailAddress?.emailAddress || "Anonymous",
+        createdAt: moment().format("DD/MM/YYYY"),
+      });
 
-    console.log(result);
+      console.log("Database save result:", result);
+    } catch (error) {
+      console.error("Error saving to database:", error);
+    }
   };
 
   return (
