@@ -5,14 +5,19 @@ import { useUser } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../../utils/db';
 import { AIOutput } from '../../../../utils/schema';
-import { eq } from 'drizzle-orm';  // Ensure this import is correct
+import { eq, gte, lt  } from 'drizzle-orm';  // Import additional date filters
+import { Loader2Icon } from 'lucide-react';
+
 
 interface History {
   aiResponse?: string;
   createdBy: string;
+  createdAt:string;
 }
 
-const MAX_CREDITS = 20000;  
+const MAX_CREDITS = 10000;  
+
+
 
 function UsageTrack() {
   const { user } = useUser();
@@ -29,12 +34,21 @@ function UsageTrack() {
   const getData = async () => {
     setLoading(true);  // Start loading
     try {
-      const result: History[] = await db
+      // Get the current date in YYYY-MM-DD format
+      const today = new Date();
+      // Set the start of the day (00:00:00) and the end of the day (23:59:59)
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));  // Start of today
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999));  // End of today
+
+      const result = await db
         .select()
         .from(AIOutput)
-        .where(eq(AIOutput.createdBy, user?.primaryEmailAddress?.emailAddress));
+        .where(eq(AIOutput.createdBy, user?.primaryEmailAddress?.emailAddress))
+        .where(gte(AIOutput.createdAt, startOfDay.toISOString()))  // Start of today
+        .where(lt(AIOutput.createdAt, endOfDay.toISOString()));  // End of today
 
-      const usage = getTotalUsage(result);  // Calculate the total usage
+      console.log(result); 
+      const usage = getTotalUsage(result);  // Calculate the total usage for today
       setTotalUsage(usage);
       setProgressWidth((usage / MAX_CREDITS) * 100);  // Calculate progress bar width
     } catch (error) {
@@ -85,7 +99,7 @@ function UsageTrack() {
         </h2>
 
         {/* Loading state */}
-        {loading && <p>Loading usage data...</p>}
+        {loading && <Loader2Icon className='animate-spin'/>}
       </div>
 
       {/* Upgrade button */}
