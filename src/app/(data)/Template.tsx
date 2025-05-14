@@ -2,7 +2,6 @@ import { ChartBarIcon } from "lucide-react";
 
 export default[
     
- 
    {
     name: "Social Media Caption",
     desc: "An AI Tool that generates catchy captions for social media posts based on your input.",
