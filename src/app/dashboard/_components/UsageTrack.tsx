@@ -5,11 +5,12 @@ import { useUser } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../../../utils/db';
 import { AIOutput } from '../../../../utils/schema';
-import { eq } from 'drizzle-orm'; 
+import { eq, and, gte } from 'drizzle-orm';
 
 interface History {
   aiResponse?: string | null;
   createdBy: string;
+  createdAt: Date; // Assuming your AIOutput schema has a createdAt timestamp
 }
 
 const MAX_CREDITS = 10000;
@@ -22,11 +23,17 @@ function UsageTrack() {
 
   useEffect(() => {
     if (user?.primaryEmailAddress?.emailAddress) {
-      getData();
+      getDataForToday();
     }
   }, [user]);
 
-  const getData = async () => {
+  const getStartOfToday = (): Date => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
+  const getDataForToday = async () => {
     setLoading(true);
     try {
       const emailAddress = user?.primaryEmailAddress?.emailAddress;
@@ -36,16 +43,23 @@ function UsageTrack() {
         return;
       }
 
+      const startOfToday = getStartOfToday();
+
       const result: History[] = await db
         .select()
         .from(AIOutput)
-        .where(eq(AIOutput.createdBy, emailAddress));
+        .where(
+          and(
+            eq(AIOutput.createdBy, emailAddress),
+            gte(AIOutput.createdAt, startOfToday)
+          )
+        );
 
       const usage = getTotalUsage(result);
       setTotalUsage(usage);
       setProgressWidth((usage / MAX_CREDITS) * 100);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching data for today:', error);
     } finally {
       setLoading(false);
     }
@@ -74,7 +88,7 @@ function UsageTrack() {
   return (
     <div className="m-5 mt-6">
       <div className="bg-primary text-white p-3 rounded-lg">
-        <h2 className="font-medium">Credits</h2>
+        <h2 className="font-medium">Credits (Today)</h2>
         <div className="h-2 bg-gray-300 w-full rounded-full mt-3">
           <div
             className={`rounded-full h-2 ${getProgressBarColor()}`}
@@ -82,9 +96,9 @@ function UsageTrack() {
           ></div>
         </div>
         <h2 className="text-sm my-2">
-          {formatUsage(totalUsage)}/{MAX_CREDITS.toLocaleString()} Credit Used
+          {formatUsage(totalUsage)}/{MAX_CREDITS.toLocaleString()} Credit Used Today
         </h2>
-        {loading && <p>Loading usage data...</p>}
+        {loading && <p>Loading today's usage data...</p>}
       </div>
       <div>
         <Button variant={'secondary'} className="w-full my-3">
